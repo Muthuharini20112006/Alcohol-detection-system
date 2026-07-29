@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Custom Tab Icon (Favicon) - Blue Tick / Checkmark -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230077B6'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E">
+    
+    <title>Alcohol Detection System | Enterprise Monitoring Platform</title>
+    
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* ============ LIGHT THEME ============ */
+        body.light-theme {
+            background: #F0F2F5;
+            color: #1A2A3A;
+        }
+        
+        body.light-theme .header-section {
+            background: linear-gradient(135deg, #1A2A3A 0%, #2C3E50 100%);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        body.light-theme .stat-card,
+        body.light-theme .gauge-card,
+        body.light-theme .control-card,
+        body.light-theme .chart-card,
+        body.light-theme .history-card {
+            background: #FFFFFF;
+            border: 1px solid #E8ECEF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        body.light-theme .filter-section {
+            background: #F8F9FA;
+            border: 1px solid #E8ECEF;
+        }
+        
+        body.light-theme .welcome-banner {
+            background: linear-gradient(135deg, #E8F4FD 0%, #D6EAF8 100%);
+            border: none;
+        }
+        
+        body.light-theme .history-table th {
+            background: #F8F9FA;
+            border-bottom: 1px solid #E8ECEF;
+            color: #1A2A3A;
+        }
+        
+        body.light-theme .history-table td {
+            border-bottom: 1px solid #F0F2F5;
+        }
+        
+        body.light-theme .tab-btn {
+            background: #FFFFFF;
+            color: #6C757D;
+        }
+        
+        body.light-theme .tab-btn.active {
+            background: #FFFFFF;
+            color: #0077B6;
+            border-bottom: 3px solid #0077B6;
+        }
+        
+        body.light-theme .tab-btn:hover:not(.active) {
+            background: #F8F9FA;
+            color: #1A2A3A;
+        }
+        
+        body.light-theme .set-btn {
+            background: #FFFFFF;
+            border: 1px solid #DEE2E6;
+            color: #1A2A3A;
+        }
+        
+        body.light-theme .search-box input,
+        body.light-theme .date-input-group input {
+            background: #FFFFFF;
+            border: 1px solid #DEE2E6;
+        }
+        
+        body.light-theme .summary-stats {
+            background: #F8F9FA;
+        }
+        
+        body.light-theme .modal-content {
+            background: #FFFFFF;
+        }
+        
+        body.light-theme .toast-notification {
+            background: #1A2A3A;
+            color: #FFFFFF;
+        }
+        
+        body.light-theme .alert-row {
+            background: #FEF2F0;
+        }
+        
+        body.light-theme .status-text {
+            color: #FFFFFF;
+        }
+        
+        /* ============ DARK THEME ============ */
+        body.dark-theme {
+            background: #0A0E17;
+            color: #E6EDF3;
+        }
+        
+        body.dark-theme .header-section {
+            background: linear-gradient(135deg, #1A2A3A 0%, #2C3E50 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        body.dark-theme .stat-card,
+        body.dark-theme .gauge-card,
+        body.dark-theme .control-card,
+        body.dark-theme .chart-card,
+        body.dark-theme .history-card {
+            background: #111827;
+            border: 1px solid #1F2937;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        body.dark-theme .filter-section {
+            background: #0F1420;
+            border: 1px solid #1F2937;
+        }
+        
+        body.dark-theme .welcome-banner {
+            background: linear-gradient(135deg, #111827 0%, #0F1420 100%);
+            border: 1px solid #1F2937;
+        }
+        
+        body.dark-theme .welcome-banner h1 {
+            color: #FFFFFF;
+        }
+        
+        body.dark-theme .welcome-banner p {
+            color: #9CA3AF;
+        }
+        
+        body.dark-theme .history-table th {
+            background: #0F1420;
+            border-bottom: 1px solid #1F2937;
+            color: #E6EDF3;
+        }
+        
+        body.dark-theme .history-table td {
+            border-bottom: 1px solid #1F2937;
+            color: #D1D5DB;
+        }
+        
+        body.dark-theme .history-table tr:hover {
+            background: #1A202C;
+        }
+        
+        body.dark-theme .tab-btn {
+            background: #111827;
+            color: #9CA3AF;
+        }
+        
+        body.dark-theme .tab-btn.active {
+            background: #111827;
+            color: #60A5FA;
+            border-bottom: 3px solid #60A5FA;
+        }
+        
+        body.dark-theme .tab-btn:hover:not(.active) {
+            background: #1A202C;
+            color: #FFFFFF;
+        }
+        
+        body.dark-theme .set-btn {
+            background: #1F2937;
+            border: 1px solid #374151;
+            color: #E6EDF3;
+        }
+        
+        body.dark-theme .set-btn:hover {
+            background: #374151;
+            color: #FFFFFF;
+        }
+        
+        body.dark-theme .search-box input,
+        body.dark-theme .date-input-group input {
+            background: #0F1420;
+            border: 1px solid #1F2937;
+            color: #E6EDF3;
+        }
+        
+        body.dark-theme .search-box input::placeholder {
+            color: #6B7280;
+        }
+        
+        body.dark-theme .summary-stats {
+            background: #0F1420;
+        }
+        
+        body.dark-theme .stat-number {
+            color: #FFFFFF;
+        }
+        
+        body.dark-theme .gauge-value {
+            color: #FFFFFF;
+        }
+        
+        body.dark-theme .control-card h3 {
+            color: #FFFFFF;
+        }
+        
+        body.dark-theme .modal-content {
+            background: #111827;
+            border: 1px solid #1F2937;
+        }
+        
+        body.dark-theme .modal-content h3 {
+            color: #F87171;
+        }
+        
+        body.dark-theme .toast-notification {
+            background: #1F2937;
+            color: #FFFFFF;
+            border: 1px solid #374151;
+        }
+        
+        body.dark-theme .alert-row {
+            background: #2D1A1A;
+        }
+        
+        body.dark-theme .status-text {
+            color: #FFFFFF;
+        }
+        
+        body.dark-theme .threshold-label {
+            color: #60A5FA !important;
+        }
+        
+        body.dark-theme .btn-outline-refresh {
+            border-color: #374151;
+            color: #E6EDF3;
+            background: #1F2937;
+        }
+        
+        body.dark-theme .btn-outline-refresh:hover {
+            background: #60A5FA;
+            color: #0A0E17;
+            border-color: #60A5FA;
+        }
+        
+        body.dark-theme .page-btn {
+            background: #1F2937;
+            border: 1px solid #374151;
+            color: #E6EDF3;
+        }
+        
+        body.dark-theme .page-btn.active {
+            background: #60A5FA;
+            color: #0A0E17;
+            border-color: #60A5FA;
+        }
+        
+        body.dark-theme .alert-badge.normal {
+            background: #1A3A2A;
+            color: #4ADE80;
+        }
+        
+        body.dark-theme .alert-badge.warning {
+            background: #3A1A1A;
+            color: #F87171;
+        }
+        
+        /* ============ HEADER SECTION ============ */
+        .header-section {
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+        
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        
+        .logo-icon {
+            width: 56px;
+            height: 56px;
+            background: #0077B6;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        body.dark-theme .logo-icon {
+            background: #60A5FA;
+        }
+        
+        .logo-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .logo-text h1 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        body.light-theme .logo-text h1 {
+            color: #FFFFFF;
+        }
+        
+        body.dark-theme .logo-text h1 {
+            color: #FFFFFF;
+        }
+        
+        .logo-text p {
+            font-size: 13px;
+            margin-top: 6px;
+        }
+        
+        body.light-theme .logo-text p {
+            color: #C0D0E0;
+        }
+        
+        body.dark-theme .logo-text p {
+            color: #9CA3AF;
+        }
+        
+        .controls-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 11px 26px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-start { background: #00A86B; color: white; }
+        .btn-start:hover { background: #008C5A; transform: translateY(-2px); }
+        .btn-stop { background: #DC3545; color: white; }
+        .btn-stop:hover { background: #C82333; transform: translateY(-2px); }
+        .btn-warning { background: #F4A261; color: white; }
+        .btn-warning:hover { background: #E76F51; transform: translateY(-2px); }
+        .btn-delete { background: #DC3545; color: white; }
+        .btn-delete:hover { background: #C82333; transform: translateY(-2px); }
+        
+        .right-section {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.15);
+            padding: 10px 24px;
+            border-radius: 50px;
+        }
+        
+        body.dark-theme .status-indicator {
+            background: rgba(255,255,255,0.08);
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #6C757D;
+        }
+        
+        .status-dot.active { background: #00A86B; animation: pulse 1.5s infinite; }
+        .status-dot.alert { background: #DC3545; animation: blink 0.5s infinite; }
+        
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        
+        .status-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .theme-toggle {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 50px;
+            padding: 10px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        body.light-theme .theme-toggle {
+            color: white;
+        }
+        
+        body.dark-theme .theme-toggle {
+            background: rgba(255,255,255,0.1);
+            color: #E6EDF3;
+            border: 1px solid #374151;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.03);
+            background: rgba(255,255,255,0.25);
+        }
+        
+        .tabs {
+            max-width: 1600px;
+            margin: 32px auto 0;
+            padding: 0 24px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .tab-btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 14px 14px 0 0;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tab-content {
+            display: none;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 28px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0;
+        }
+        
+        .welcome-banner {
+            border-radius: 20px;
+            padding: 32px 36px;
+            margin-bottom: 28px;
+        }
+        
+        .welcome-banner h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-banner p {
+            font-size: 15px;
+        }
+        
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+        
+        .stat-card {
+            border-radius: 20px;
+            padding: 24px;
+            transition: all 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+        
+        body.light-theme .stat-label { color: #6C757D; }
+        body.dark-theme .stat-label { color: #9CA3AF; }
+        
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            margin-bottom: 28px;
+        }
+        
+        .gauge-card, .control-card {
+            border-radius: 24px;
+            padding: 32px;
+        }
+        
+        .chart-card {
+            border-radius: 24px;
+            padding: 28px;
+            width: 100%;
+        }
+        
+        .gauge-value {
+            font-size: 80px;
+            font-weight: 800;
+            text-align: center;
+        }
+        
+        .gauge-unit {
+            font-size: 22px;
+        }
+        
+        body.light-theme .gauge-unit { color: #6C757D; }
+        body.dark-theme .gauge-unit { color: #9CA3AF; }
+        
+        .threshold-bar {
+            border-radius: 12px;
+            height: 10px;
+            margin: 28px 0;
+            overflow: hidden;
+        }
+        
+        body.light-theme .threshold-bar { background: #E9ECEF; }
+        body.dark-theme .threshold-bar { background: #1F2937; }
+        
+        .threshold-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00A86B, #DC3545);
+            transition: width 0.3s ease;
+        }
+        
+        .alert-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border-radius: 40px;
+            margin-top: 24px;
+            width: 100%;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        body.light-theme .alert-badge.normal { background: #E8F8F2; color: #00A86B; }
+        body.light-theme .alert-badge.warning { background: #FEF2F0; color: #DC3545; }
+        body.dark-theme .alert-badge.normal { background: #1A3A2A; color: #4ADE80; }
+        body.dark-theme .alert-badge.warning { background: #3A1A1A; color: #F87171; }
+        
+        .control-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+        }
+        
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        .history-card {
+            border-radius: 24px;
+            padding: 28px;
+        }
+        
+        .filter-section {
+            padding: 24px;
+            border-radius: 18px;
+            margin-bottom: 28px;
+        }
+        
+        .filter-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        body.light-theme .filter-title { color: #1A2A3A; }
+        body.dark-theme .filter-title { color: #E6EDF3; }
+        
+        .date-range-group {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-bottom: 18px;
+        }
+        
+        .date-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .date-input-group label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        body.light-theme .date-input-group label { color: #6C757D; }
+        body.dark-theme .date-input-group label { color: #9CA3AF; }
+        
+        .date-input-group input {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        
+        .set-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+            padding-top: 18px;
+        }
+        
+        body.light-theme .set-buttons { border-top: 1px solid #E9ECEF; }
+        body.dark-theme .set-buttons { border-top: 1px solid #1F2937; }
+        
+        .set-btn {
+            padding: 8px 18px;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .set-btn:hover {
+            background: #0077B6;
+            color: white;
+            border-color: #0077B6;
+        }
+        
+        body.dark-theme .set-btn:hover {
+            background: #60A5FA;
+            color: #0A0E17;
+        }
+        
+        .history-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+        
+        .search-box input {
+            padding: 12px 18px;
+            border-radius: 12px;
+            width: 320px;
+            font-size: 14px;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #0077B6;
+        }
+        
+        body.dark-theme .search-box input:focus {
+            border-color: #60A5FA;
+        }
+        
+        .delete-controls {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .history-table th {
+            text-align: left;
+            padding: 16px 14px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .history-table td {
+            padding: 14px;
+            font-size: 14px;
+        }
+        
+        .checkbox-col {
+            width: 45px;
+            text-align: center;
+        }
+        
+        .select-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #0077B6;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 28px;
+        }
+        
+        .page-btn {
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        body.light-theme .page-btn {
+            background: #FFFFFF;
+            border: 1px solid #DEE2E6;
+            color: #1A2A3A;
+        }
+        
+        body.dark-theme .page-btn {
+            background: #1F2937;
+            border: 1px solid #374151;
+            color: #E6EDF3;
+        }
+        
+        .page-btn.active {
+            background: #0077B6;
+            color: white;
+            border-color: #0077B6;
+        }
+        
+        body.dark-theme .page-btn.active {
+            background: #60A5FA;
+            color: #0A0E17;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 14px;
+        }
+        
+        .btn-outline-refresh {
+            background: transparent;
+            border: 1px solid;
+            padding: 11px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        body.light-theme .btn-outline-refresh {
+            border-color: #DEE2E6;
+            color: #1A2A3A;
+            background: #FFFFFF;
+        }
+        
+        body.dark-theme .btn-outline-refresh {
+            border-color: #374151;
+            color: #E6EDF3;
+            background: #1F2937;
+        }
+        
+        .btn-outline-refresh:hover {
+            background: #0077B6;
+            color: white;
+            border-color: #0077B6;
+        }
+        
+        body.dark-theme .btn-outline-refresh:hover {
+            background: #60A5FA;
+            color: #0A0E17;
+        }
+        
+        .summary-stats {
+            margin-top: 24px;
+            padding: 18px;
+            border-radius: 18px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            text-align: center;
+        }
+        
+        .alerts-scroll-container {
+            overflow: visible;
+        }
+        
+        .alert-item {
+            padding: 18px;
+            border-bottom: 1px solid;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        body.light-theme .alert-item { border-bottom-color: #E9ECEF; }
+        body.dark-theme .alert-item { border-bottom-color: #1F2937; }
+        
+        .alert-item:hover {
+            background: rgba(0,119,182,0.05);
+        }
+        
+        body.dark-theme .alert-item:hover {
+            background: rgba(96,165,250,0.08);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            border-radius: 24px;
+            padding: 36px;
+            max-width: 440px;
+            text-align: center;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 18px;
+            font-size: 22px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 18px;
+            justify-content: center;
+            margin-top: 28px;
+        }
+        
+        .toast-notification {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            padding: 16px 28px;
+            border-radius: 14px;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .toast-notification.show { display: flex; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @media (max-width: 1000px) {
+            .two-columns { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .gauge-value { font-size: 56px; }
+            .header-container { flex-direction: column; text-align: center; }
+            .controls-group { justify-content: center; }
+            .right-section { justify-content: center; }
+        }
+        
+        @media (max-width: 700px) {
+            .stats-row { grid-template-columns: 1fr; }
+            .history-controls { flex-direction: column; align-items: stretch; }
+            .search-box input { width: 100%; }
+            .delete-controls { justify-content: space-between; flex-wrap: wrap; }
+            .alert-item { flex-direction: column; text-align: center; }
+        }
+        
+        .threshold-label {
+            color: #0077B6;
+        }
+        
+        body.dark-theme .threshold-label {
+            color: #60A5FA;
+        }
+    </style>
+</head>
+<body class="light-theme">
+    <div class="header-section">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L3 7L3 12C3 16.97 7.03 21 12 21C16.97 21 21 16.97 21 12L21 7L12 2Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        <path d="M9 12L11 14L15 10" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>Alcohol Detection System</h1>
+                    <p>Enterprise Real-Time Monitoring Platform</p>
+                </div>
+            </div>
+            <div class="controls-group">
+                <button class="btn btn-start" onclick="startMonitoring()">▶ Start Monitoring</button>
+                <button class="btn btn-stop" onclick="stopMonitoring()">⏹ Stop Monitoring</button>
+            </div>
+            <div class="right-section">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span class="status-text" id="statusText">System Ready</span>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="themeIcon">🌞</span>
+                    <span id="themeText">Light</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('live')">📊 Live Dashboard</button>
+        <button class="tab-btn" onclick="switchTab('history')">📋 Data History</button>
+        <button class="tab-btn" onclick="switchTab('alerts')">🔔 Alert Log</button>
+    </div>
+    
+    <div id="liveTab" class="tab-content active">
+        <div class="main-container">
+            <div class="welcome-banner">
+                <h1>Alcohol Detection & Alert System</h1>
+                <p>Real-time monitoring • Automatic email notifications • Complete audit trail • Enterprise-grade security</p>
+            </div>
+            <div class="stats-row">
+                <div class="stat-card"><div class="stat-number" id="currentLevel">0.000</div><div class="stat-label">Current Level (% BAC)</div></div>
+                <div class="stat-card"><div class="stat-number" id="avgLevel">0.000</div><div class="stat-label">Average (Last 50)</div></div>
+                <div class="stat-card"><div class="stat-number" id="peakLevel">0.000</div><div class="stat-label">Peak Level</div></div>
+                <div class="stat-card"><div class="stat-number" id="alertCount">0</div><div class="stat-label">Alerts Sent</div></div>
+            </div>
+            <div class="two-columns">
+                <div class="gauge-card">
+                    <div class="gauge-value"><span id="alcoholValue">0.000</span><span class="gauge-unit"> % BAC</span></div>
+                    <div class="threshold-bar"><div class="threshold-fill" id="thresholdFill" style="width:0%"></div></div>
+                    <div style="text-align:center; font-size:15px;">Threshold: <strong id="thresholdLabel" class="threshold-label">0.08</strong>% BAC</div>
+                    <div id="alertBadge" class="alert-badge normal"><span>✓</span> System Normal</div>
+                </div>
+                <div class="control-card">
+                    <h3>Threshold Configuration</h3>
+                    <input type="range" id="thresholdSlider" min="0.01" max="0.15" step="0.01" value="0.08" style="width:100%; margin:18px 0;">
+                    <div style="text-align:center; font-size:32px; font-weight:700; color:#0077B6;" id="displayThreshold">0.08</div>
+                    <button class="btn-outline-refresh" style="width:100%; margin-top:18px; justify-content:center;" onclick="applyThreshold()">Apply Changes</button>
+                    <div style="margin-top:18px; font-size:13px; text-align:center;">📧 Alert notifications sent to: manjudharani107@gmail.com</div>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-container"><canvas id="alcoholChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="historyTab" class="tab-content">
+        <div class="main-container">
+            <div class="history-card">
+                <div class="filter-section">
+                    <div class="filter-title"><span>📅</span> Date Range Filter</div>
+                    <div class="date-range-group">
+                        <div class="date-input-group"><label>Start Date</label><input type="date" id="startDate" onchange="filterByDateRange()"></div>
+                        <div class="date-input-group"><label>End Date</label><input type="date" id="endDate" onchange="filterByDateRange()"></div>
+                        <button class="btn-outline-refresh" onclick="clearDateFilter()">Clear Filter</button>
+                    </div>
+                    <div class="set-buttons">
+                        <span style="font-size:13px; margin-right:12px;">Quick Presets:</span>
+                        <button class="set-btn" onclick="setDateRange('today')">Today</button>
+                        <button class="set-btn" onclick="setDateRange('yesterday')">Yesterday</button>
+                        <button class="set-btn" onclick="setDateRange('week')">Last 7 Days</button>
+                        <button class="set-btn" onclick="setDateRange('month')">Last 30 Days</button>
+                        <button class="set-btn" onclick="setDateRange('all')">All Time</button>
+                    </div>
+                </div>
+                <div class="history-controls">
+                    <div class="search-box"><input type="text" id="searchInput" placeholder="Search by timestamp or level..." onkeyup="autoSearch()"></div>
+                    <div class="delete-controls">
+                        <span id="selectedCount" style="font-size:14px;">0 selected</span>
+                        <button class="btn btn-delete" onclick="confirmDelete()" id="deleteBtn" style="display:none;">Delete Selected</button>
+                        <div class="export-buttons">
+                            <button class="btn btn-warning" onclick="exportToPDF()">Export PDF</button>
+                            <button class="btn-outline-refresh" onclick="refreshHistory()">🔄 Refresh</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="history-table" id="historyTable">
+                        <thead><tr><th class="checkbox-col"><input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll()"></th><th>ID</th><th>Date & Time</th><th>Alcohol Level</th><th>Threshold</th><th>Alert</th><th>Status</th></tr></thead>
+                        <tbody id="historyTableBody"><tr><td colspan="7" style="text-align:center;">Loading data...</td></tr></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="pagination"></div>
+                <div class="summary-stats"><div><strong>Filtered Records:</strong> <span id="filteredCount">0</span></div><div><strong>Alerts in Range:</strong> <span id="filteredAlerts">0</span></div><div><strong>Average Level:</strong> <span id="filteredAvg">0.000</span> % BAC</div></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="alertsTab" class="tab-content">
+        <div class="main-container">
+            <div class="history-card">
+                <h3 style="margin-bottom: 24px; font-size: 18px;">🔔 Alert History</h3>
+                <div id="alertsList" class="alerts-scroll-container">
+                    <div style="text-align:center; padding:50px;">Loading alerts...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3>⚠ Confirm Deletion</h3>
+            <p id="deleteMessage" style="font-size: 15px;">Are you sure you want to delete selected records?</p>
+            <p style="font-size:13px; margin-top:12px;">This action cannot be undone!</p>
+            <div class="modal-buttons">
+                <button class="btn-outline-refresh" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-delete" onclick="executeDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast-notification"><span id="toastIcon">✓</span><span id="toastMessage"></span></div>
+    
+    <script>
+        const socket = io();
+        let chart;
+        let readingsData = [], timeLabels = [];
+        let alertCounter = 0;
+        let isMonitoring = false;
+        let currentThreshold = 0.08;
+        let allReadings = [];
+        let currentFilteredReadings = [];
+        let currentPage = 1;
+        let selectedIds = new Set();
+        const itemsPerPage = 15;
+        
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            
+            if (body.classList.contains('light-theme')) {
+                body.classList.remove('light-theme');
+                body.classList.add('dark-theme');
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'Dark';
+                localStorage.setItem('theme', 'dark');
+                showToast('Dark theme activated');
+                updateChartTheme('dark');
+            } else {
+                body.classList.remove('dark-theme');
+                body.classList.add('light-theme');
+                themeIcon.textContent = '🌞';
+                themeText.textContent = 'Light';
+                localStorage.setItem('theme', 'light');
+                showToast('Light theme activated');
+                updateChartTheme('light');
+            }
+        }
+        
+        function updateChartTheme(theme) {
+            if (chart) {
+                const gridColor = theme === 'dark' ? '#1F2937' : '#E9ECEF';
+                const textColor = theme === 'dark' ? '#E6EDF3' : '#1A2A3A';
+                const borderColor = theme === 'dark' ? '#60A5FA' : '#0077B6';
+                chart.options.scales.y.grid.color = gridColor;
+                chart.options.scales.x.grid.color = gridColor;
+                chart.options.scales.y.title.color = textColor;
+                chart.options.scales.x.title.color = textColor;
+                chart.options.plugins.legend.labels.color = textColor;
+                chart.options.scales.y.ticks.color = textColor;
+                chart.options.scales.x.ticks.color = textColor;
+                chart.data.datasets[0].borderColor = borderColor;
+                chart.data.datasets[0].pointBackgroundColor = borderColor;
+                chart.update();
+            }
+        }
+        
+        function loadSavedTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.remove('light-theme');
+                document.body.classList.add('dark-theme');
+                document.getElementById('themeIcon').textContent = '🌙';
+                document.getElementById('themeText').textContent = 'Dark';
+                updateChartTheme('dark');
+            } else {
+                document.body.classList.add('light-theme');
+                document.body.classList.remove('dark-theme');
+                document.getElementById('themeIcon').textContent = '🌞';
+                document.getElementById('themeText').textContent = 'Light';
+                updateChartTheme('light');
+            }
+        }
+        
+        function formatTime12Hour(timestamp) {
+            if (!timestamp) return '';
+            let parts = timestamp.split(' ');
+            if (parts.length < 2) return timestamp;
+            let datePart = parts[0];
+            let timePart = parts[1];
+            let timeComponents = timePart.split(':');
+            let hour = parseInt(timeComponents[0]);
+            let minute = timeComponents[1];
+            let second = timeComponents[2] || '00';
+            let ampm = hour >= 12 ? 'PM' : 'AM';
+            hour = hour % 12;
+            hour = hour === 0 ? 12 : hour;
+            return `${datePart} ${hour}:${minute}:${second} ${ampm}`;
+        }
+        
+        function initChart() {
+            const ctx = document.getElementById('alcoholChart').getContext('2d');
+            const isDark = document.body.classList.contains('dark-theme');
+            const gridColor = isDark ? '#1F2937' : '#E9ECEF';
+            const textColor = isDark ? '#E6EDF3' : '#1A2A3A';
+            const borderColor = isDark ? '#60A5FA' : '#0077B6';
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: { 
+                    labels: [], 
+                    datasets: [
+                        { label: 'Alcohol Level (% BAC)', data: [], borderColor: borderColor, borderWidth: 3, tension: 0.4, fill: true, backgroundColor: isDark ? 'rgba(96,165,250,0.08)' : 'rgba(0,119,182,0.05)', pointRadius: 4, pointBackgroundColor: borderColor },
+                        { label: 'Threshold', data: [], borderColor: '#DC3545', borderWidth: 2, borderDash: [8,4], fill: false, pointRadius: 0 }
+                    ]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: { legend: { position: 'top', labels: { color: textColor, font: { size: 12 } } }, tooltip: { mode: 'index', intersect: false } },
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Alcohol Level (% BAC)', color: textColor, font: { size: 12 } }, grid: { color: gridColor }, ticks: { color: textColor } }, x: { title: { display: true, text: 'Time', color: textColor, font: { size: 12 } }, grid: { color: gridColor }, ticks: { color: textColor } } }
+                }
+            });
+        }
+        
+        function updateChartData(level, threshold, timestamp, historyReadings, historyTimes) {
+            readingsData = historyReadings ? [...historyReadings] : [...readingsData, level];
+            timeLabels = historyTimes ? [...historyTimes] : [...timeLabels, timestamp];
+            if (readingsData.length > 50) { readingsData.shift(); timeLabels.shift(); }
+            chart.data.datasets[0].data = [...readingsData];
+            chart.data.datasets[1].data = new Array(readingsData.length).fill(threshold);
+            chart.data.labels = [...timeLabels];
+            chart.update();
+        }
+        
+        function updateStats(level, readingsHistory) {
+            document.getElementById('currentLevel').textContent = level.toFixed(3);
+            if (readingsHistory && readingsHistory.length > 0) {
+                const avg = readingsHistory.reduce((a,b)=>a+b,0)/readingsHistory.length;
+                const max = Math.max(...readingsHistory);
+                document.getElementById('avgLevel').textContent = avg.toFixed(3);
+                document.getElementById('peakLevel').textContent = max.toFixed(3);
+            }
+        }
+        
+        function updateAlertUI(exceeded) {
+            const badge = document.getElementById('alertBadge');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            if (exceeded && isMonitoring) {
+                badge.className = 'alert-badge warning'; badge.innerHTML = '<span>⚠</span> ALERT: Threshold Exceeded!';
+                statusDot.className = 'status-dot alert'; statusText.innerHTML = 'Alert Active';
+            } else if (isMonitoring) {
+                badge.className = 'alert-badge normal'; badge.innerHTML = '<span>✓</span> System Normal';
+                statusDot.className = 'status-dot active'; statusText.innerHTML = 'Monitoring Active';
+            } else {
+                badge.className = 'alert-badge normal'; badge.innerHTML = '<span>⏹</span> System Stopped';
+                statusDot.className = 'status-dot'; statusText.innerHTML = 'System Ready';
+            }
+        }
+        
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastIcon').textContent = isError ? '✗' : '✓';
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        function filterByDateRange() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate && !endDate) {
+                currentFilteredReadings = [...allReadings];
+            } else {
+                currentFilteredReadings = allReadings.filter(r => {
+                    const readingDate = r.timestamp.split(' ')[0];
+                    if (startDate && endDate) return readingDate >= startDate && readingDate <= endDate;
+                    else if (startDate) return readingDate >= startDate;
+                    else if (endDate) return readingDate <= endDate;
+                    return true;
+                });
+            }
+            
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                currentFilteredReadings = currentFilteredReadings.filter(r => r.timestamp.toLowerCase().includes(searchTerm) || r.alcohol_level.toString().includes(searchTerm));
+            }
+            
+            updateFilterSummary();
+            currentPage = 1;
+            selectedIds.clear();
+            updateDeleteButton();
+            displayHistoryPage(1);
+            showToast(`Filtered to ${currentFilteredReadings.length} records`);
+        }
+        
+        function updateFilterSummary() {
+            const filteredCount = currentFilteredReadings.length;
+            const alertsInRange = currentFilteredReadings.filter(r => r.alert_sent).length;
+            const avgLevel = filteredCount > 0 ? currentFilteredReadings.reduce((a,b)=>a+b.alcohol_level,0)/filteredCount : 0;
+            document.getElementById('filteredCount').textContent = filteredCount;
+            document.getElementById('filteredAlerts').textContent = alertsInRange;
+            document.getElementById('filteredAvg').textContent = avgLevel.toFixed(3);
+        }
+        
+        function clearDateFilter() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            currentFilteredReadings = [...allReadings];
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                currentFilteredReadings = currentFilteredReadings.filter(r => r.timestamp.toLowerCase().includes(searchTerm) || r.alcohol_level.toString().includes(searchTerm));
+            }
+            updateFilterSummary();
+            currentPage = 1;
+            selectedIds.clear();
+            updateDeleteButton();
+            displayHistoryPage(1);
+            showToast('Date filter cleared');
+        }
+        
+        function setDateRange(range) {
+            const today = new Date();
+            switch(range) {
+                case 'today':
+                    document.getElementById('startDate').value = today.toISOString().split('T')[0];
+                    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+                    break;
+                case 'yesterday':
+                    const yesterday = new Date(today);
+                    yesterday.setDate(today.getDate() - 1);
+                    document.getElementById('startDate').value = yesterday.toISOString().split('T')[0];
+                    document.getElementById('endDate').value = yesterday.toISOString().split('T')[0];
+                    break;
+                case 'week':
+                    const weekAgo = new Date(today);
+                    weekAgo.setDate(today.getDate() - 7);
+                    document.getElementById('startDate').value = weekAgo.toISOString().split('T')[0];
+                    document.getElementById('endDate').value = '';
+                    break;
+                case 'month':
+                    const monthAgo = new Date(today);
+                    monthAgo.setDate(today.getDate() - 30);
+                    document.getElementById('startDate').value = monthAgo.toISOString().split('T')[0];
+                    document.getElementById('endDate').value = '';
+                    break;
+                case 'all':
+                    document.getElementById('startDate').value = '';
+                    document.getElementById('endDate').value = '';
+                    break;
+            }
+            filterByDateRange();
+            showToast(`Showing ${range} data`);
+        }
+        
+        function autoSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            let filtered = [...allReadings];
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            if (startDate || endDate) {
+                filtered = filtered.filter(r => {
+                    const readingDate = r.timestamp.split(' ')[0];
+                    if (startDate && endDate) return readingDate >= startDate && readingDate <= endDate;
+                    if (startDate) return readingDate >= startDate;
+                    if (endDate) return readingDate <= endDate;
+                    return true;
+                });
+            }
+            if (searchTerm) {
+                filtered = filtered.filter(r => {
+                    const originalTimestamp = r.timestamp;
+                    const alcoholLevel = r.alcohol_level.toString();
+                    const idStr = r.id.toString();
+                    const statusStr = r.status.toLowerCase();
+                    const parts = originalTimestamp.split(' ');
+                    const datePart = parts[0];
+                    const timePart24 = parts[1];
+                    const timeComponents = timePart24.split(':');
+                    let hour24 = parseInt(timeComponents[0]);
+                    const minute = timeComponents[1];
+                    const second = timeComponents[2];
+                    let hour12 = hour24 % 12;
+                    hour12 = hour12 === 0 ? 12 : hour12;
+                    const ampm = hour24 >= 12 ? 'pm' : 'am';
+                    const time12 = `${hour12}:${minute}:${second} ${ampm}`;
+                    const time12NoSeconds = `${hour12}:${minute} ${ampm}`;
+                    const time24NoSeconds = `${hour24}:${minute}`;
+                    const dateTime12 = `${datePart} ${time12}`;
+                    const dateTime12NoSeconds = `${datePart} ${time12NoSeconds}`;
+                    return originalTimestamp.toLowerCase().includes(searchTerm) ||
+                           dateTime12.toLowerCase().includes(searchTerm) ||
+                           dateTime12NoSeconds.toLowerCase().includes(searchTerm) ||
+                           time12.toLowerCase().includes(searchTerm) ||
+                           time12NoSeconds.toLowerCase().includes(searchTerm) ||
+                           timePart24.toLowerCase().includes(searchTerm) ||
+                           time24NoSeconds.toLowerCase().includes(searchTerm) ||
+                           datePart.includes(searchTerm) ||
+                           alcoholLevel.includes(searchTerm) ||
+                           idStr.includes(searchTerm) ||
+                           statusStr.includes(searchTerm);
+                });
+            }
+            currentFilteredReadings = filtered;
+            updateFilterSummary();
+            currentPage = 1;
+            selectedIds.clear();
+            updateDeleteButton();
+            displayHistoryPage(1);
+            if (searchTerm) { showToast(`Found ${currentFilteredReadings.length} matching records`); }
+        }
+        
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const start = (currentPage - 1) * itemsPerPage;
+            const paginated = currentFilteredReadings.slice(start, start + itemsPerPage);
+            if (selectAllCheckbox.checked) { paginated.forEach(r => selectedIds.add(r.id)); } else { paginated.forEach(r => selectedIds.delete(r.id)); }
+            updateDeleteButton();
+            displayHistoryPage(currentPage);
+        }
+        
+        function toggleSelect(id) {
+            if (selectedIds.has(id)) { selectedIds.delete(id); } else { selectedIds.add(id); }
+            updateDeleteButton();
+            displayHistoryPage(currentPage);
+        }
+        
+        function updateDeleteButton() {
+            const deleteBtn = document.getElementById('deleteBtn');
+            const count = selectedIds.size;
+            document.getElementById('selectedCount').textContent = `${count} selected`;
+            deleteBtn.style.display = count > 0 ? 'inline-flex' : 'none';
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const start = (currentPage - 1) * itemsPerPage;
+            const paginated = currentFilteredReadings.slice(start, start + itemsPerPage);
+            selectAllCheckbox.checked = paginated.length > 0 && paginated.every(r => selectedIds.has(r.id));
+        }
+        
+        function confirmDelete() {
+            if (selectedIds.size === 0) return;
+            document.getElementById('deleteMessage').innerHTML = `Are you sure you want to delete <strong>${selectedIds.size}</strong> selected record(s)?`;
+            document.getElementById('confirmModal').classList.add('show');
+        }
+        
+        function closeModal() { document.getElementById('confirmModal').classList.remove('show'); }
+        
+        async function executeDelete() {
+            const idsToDelete = Array.from(selectedIds);
+            closeModal();
+            showToast(`Deleting ${idsToDelete.length} records...`);
+            try {
+                const response = await fetch('/api/history/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: idsToDelete }) });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast(`Deleted ${idsToDelete.length} records successfully`);
+                    selectedIds.clear();
+                    updateDeleteButton();
+                    await loadHistory();
+                } else { showToast('Failed to delete records', true); }
+            } catch (error) { showToast('Error deleting records', true); }
+        }
+        
+        async function loadHistory() {
+            try {
+                const response = await fetch(`/api/history/all?limit=5000&offset=0`);
+                const data = await response.json();
+                allReadings = data.readings.reverse();
+                currentFilteredReadings = [...allReadings];
+                displayHistoryPage(1);
+                updateFilterSummary();
+                loadSummaryStats();
+            } catch (error) { console.error('Error loading history:', error); }
+        }
+        
+        function displayHistoryPage(page) {
+            currentPage = page;
+            const start = (page - 1) * itemsPerPage;
+            const paginated = currentFilteredReadings.slice(start, start + itemsPerPage);
+            const tbody = document.getElementById('historyTableBody');
+            if (paginated.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No records found</td></tr>';
+            } else {
+                tbody.innerHTML = paginated.map(r => `
+                    <tr class="${r.alert_sent ? 'alert-row' : ''}">
+                        <td class="checkbox-col"><input type="checkbox" class="select-checkbox" ${selectedIds.has(r.id) ? 'checked' : ''} onchange="toggleSelect(${r.id})"></td>
+                        <td>${r.id}</td>
+                        <td>${formatTime12Hour(r.timestamp)}</td>
+                        <td style="font-weight:600; color:${r.alcohol_level >= 0.08 ? '#DC3545' : '#00A86B'}">${r.alcohol_level.toFixed(3)}</td>
+                        <td>${r.threshold}</td>
+                        <td>${r.alert_sent ? 'Yes' : 'No'}</td>
+                        <td><span style="padding:4px 10px; border-radius:20px; background:${r.status === 'ALERT' ? '#FEF2F0' : '#E8F8F2'}; color:${r.status === 'ALERT' ? '#DC3545' : '#00A86B'}">${r.status}</span></td>
+                    </tr>
+                `).join('');
+            }
+            const totalPages = Math.ceil(currentFilteredReadings.length / itemsPerPage);
+            const paginationDiv = document.getElementById('pagination');
+            if (totalPages <= 1) { paginationDiv.innerHTML = ''; } else {
+                let pages = '';
+                for (let i = 1; i <= Math.min(totalPages, 8); i++) { pages += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="displayHistoryPage(${i})">${i}</button>`; }
+                paginationDiv.innerHTML = pages;
+            }
+            updateDeleteButton();
+        }
+        
+        function refreshHistory() { loadHistory(); showToast('Data refreshed'); }
+        
+        async function loadSummaryStats() {
+            try {
+                const response = await fetch('/api/stats/summary');
+                const data = await response.json();
+                document.getElementById('totalReadingsStat').textContent = data.total_readings;
+                document.getElementById('totalAlertsStat').textContent = data.total_alerts;
+                document.getElementById('avgLevelStat').textContent = data.average_level;
+            } catch (error) { console.error('Error loading stats:', error); }
+        }
+        
+        async function loadAlerts() {
+            try {
+                const response = await fetch('/api/history/alerts');
+                const data = await response.json();
+                const alertsContainer = document.getElementById('alertsList');
+                if (data.alerts.length === 0) {
+                    alertsContainer.innerHTML = '<div style="text-align:center; padding:50px;">No alerts triggered yet</div>';
+                } else {
+                    alertsContainer.innerHTML = data.alerts.map(a => `
+                        <div class="alert-item">
+                            <div><span style="font-size:20px;">⚠</span> <strong>${a.alcohol_level.toFixed(3)}% BAC</strong></div>
+                            <div style="font-size:14px;">${formatTime12Hour(a.timestamp)}</div>
+                            <div style="color:#00A86B;">✓ Alert Sent</div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) { console.error('Error loading alerts:', error); }
+        }
+        
+        async function exportToPDF() {
+            if (currentFilteredReadings.length === 0) { showToast('No data to export', true); return; }
+            showToast('Generating PDF report...');
+            const startDateFilter = document.getElementById('startDate').value || 'All';
+            const endDateFilter = document.getElementById('endDate').value || 'All';
+            const searchTerm = document.getElementById('searchInput').value || 'None';
+            const pdfContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Alcohol Detection Report</title><style>body{font-family:Arial,sans-serif;padding:20px;}h1{color:#1A2A3A;text-align:center;border-bottom:2px solid #0077B6;padding-bottom:10px;}h2{text-align:center;color:#6C757D;font-size:16px;margin-top:5px;}.report-info{text-align:center;margin-bottom:20px;color:#6C757D;font-size:12px;}table{width:100%;border-collapse:collapse;margin-top:20px;}th{background:#0077B6;color:white;padding:10px;text-align:left;font-size:12px;}td{padding:8px;border-bottom:1px solid #DEE2E6;font-size:11px;}.footer{text-align:center;margin-top:30px;font-size:10px;color:#6C757D;}</style></head><body><h1>Alcohol Detection System</h1><h2>Enterprise Data History Report</h2><div class="report-info"><p>Generated: ${new Date().toLocaleString()}</p><p>Date Range: ${startDateFilter} to ${endDateFilter} | Search: ${searchTerm}</p><p>Total Records: ${currentFilteredReadings.length} | Alerts: ${currentFilteredReadings.filter(r=>r.alert_sent).length}</p></div><table><thead><tr><th>ID</th><th>Date & Time</th><th>Alcohol Level</th><th>Threshold</th><th>Alert</th><th>Status</th></tr></thead><tbody>${currentFilteredReadings.map(r => `<tr><td>${r.id}</td><td>${formatTime12Hour(r.timestamp)}</td><td>${r.alcohol_level.toFixed(3)}</td><td>${r.threshold}</td><td>${r.alert_sent ? 'Yes' : 'No'}</td><td>${r.status}</td></tr>`).join('')}</tbody></table><div class="footer"><p>This is an automated report from Alcohol Detection System</p></div></body></html>`;
+            const element = document.createElement('div');
+            element.innerHTML = pdfContent;
+            const opt = { margin: [0.5, 0.5, 0.5, 0.5], filename: `Alcohol_Report_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } };
+            html2pdf().set(opt).from(element).save();
+            showToast('PDF downloaded successfully');
+        }
+        
+        async function startMonitoring() {
+            try {
+                const response = await fetch('/start_monitoring');
+                const data = await response.json();
+                if (data.status === 'started') { isMonitoring = true; showToast('Monitoring started'); }
+                else if (data.status === 'already_running') showToast('Already running');
+            } catch (error) { showToast('Failed to start', true); }
+        }
+        
+        async function stopMonitoring() {
+            try {
+                const response = await fetch('/stop_monitoring');
+                if (response.ok) { isMonitoring = false; showToast('Monitoring stopped'); updateAlertUI(false); }
+            } catch (error) { showToast('Failed to stop', true); }
+        }
+        
+        async function applyThreshold() {
+            const slider = document.getElementById('thresholdSlider');
+            const newThreshold = parseFloat(slider.value);
+            try {
+                const response = await fetch('/update_threshold', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ threshold: newThreshold }) });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    document.getElementById('thresholdLabel').textContent = newThreshold.toFixed(2);
+                    document.getElementById('displayThreshold').textContent = newThreshold.toFixed(2);
+                    showToast(`Threshold updated to ${newThreshold.toFixed(2)}% BAC`);
+                }
+            } catch (error) { showToast('Failed to update', true); }
+        }
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            if (tab === 'live') {
+                document.querySelector('.tab-btn:first-child').classList.add('active');
+                document.getElementById('liveTab').classList.add('active');
+            } else if (tab === 'history') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('historyTab').classList.add('active');
+                loadHistory();
+            } else if (tab === 'alerts') {
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                document.getElementById('alertsTab').classList.add('active');
+                loadAlerts();
+            }
+        }
+        
+        document.getElementById('thresholdSlider').addEventListener('input', function() { document.getElementById('displayThreshold').textContent = this.value; });
+        
+        socket.on('sensor_update', (data) => {
+            document.getElementById('alcoholValue').textContent = data.alcohol_level.toFixed(3);
+            document.getElementById('currentLevel').textContent = data.alcohol_level.toFixed(3);
+            if (data.alert_sent) { alertCounter++; document.getElementById('alertCount').textContent = alertCounter; showToast(`Alert: ${data.alcohol_level.toFixed(3)}% BAC exceeded threshold`); }
+            updateAlertUI(data.exceeded);
+            updateChartData(data.alcohol_level, data.threshold, data.timestamp, data.readings_history, data.timestamps_history);
+            if (data.readings_history) updateStats(data.alcohol_level, data.readings_history);
+            const fillPercent = (data.alcohol_level / 0.15) * 100;
+            document.getElementById('thresholdFill').style.width = Math.min(fillPercent, 100) + '%';
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => { loadSavedTheme(); initChart(); loadHistory(); });
+    </script>
+</body>
+</html>
