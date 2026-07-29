@@ -19,16 +19,6 @@ The Alcohol Detection System is a web-based application that detects whether a p
 - CSS
 - JavaScript
 
-
-Installation
-bash
-git clone
-https://github.com/yourusername/Alcohol-detection-system.git
-cd Alcohol-detection-system
-pip install -r requirements.txt
-python app.py
-
-
 Future Enhancements
 
 - Live camera detection
